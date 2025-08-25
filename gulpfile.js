@@ -80,6 +80,8 @@ function images() {
 
 function scripts() {
     return src([
+        'node_modules/jquery/dist/jquery.js',
+        'node_modules/jquery-ui/dist/jquery-ui.js',
         'node_modules/swiper/swiper-bundle.js',
         'app/js/src/**/*.js',
     ])

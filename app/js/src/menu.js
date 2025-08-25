@@ -1,130 +1,86 @@
 // мобильное меню
-document.addEventListener("DOMContentLoaded", () => {
-    const menuItems = document.querySelectorAll(".header .menu > .menu-item");
-    const subMenus = document.querySelectorAll(".header .menu > .menu-item > .sub-menu");
-    const burger = document.querySelector(".header__burger");
-    const headerMenu = document.querySelector(".header .menu");
-    const headerBox = document.querySelector(".header");
-    const upButton = document.querySelector(".upButton");
+
+$(function () {
+    const body = $('html');
+    const menuItems = $('.header .menu > .menu-item');
+    const subMenus = $('.header .menu > .menu-item > .sub-menu');
+    const burger = $('.header__burger');
+    const headerMenu = $('.header .menu');
+    const headerBox = $('.header');
+    const upButton = $('.upButton');
 
     let isEnabled = false;
-    let resizeTimeout;
-
-    // простая slideUp/slideDown реализация
-    function slideUp(element) {
-        element.style.height = element.scrollHeight + "px"; // стартовая высота
-        requestAnimationFrame(() => {
-            element.style.transition = "height 0.3s ease";
-            element.style.height = "0";
-        });
-        element.classList.remove("active");
-        element.addEventListener("transitionend", function handler() {
-            element.style.display = "none";
-            element.style.removeProperty("height");
-            element.style.removeProperty("transition");
-            element.removeEventListener("transitionend", handler);
-        });
-    }
-
-    function slideDown(element) {
-        element.style.display = "block";
-        element.style.height = "0";
-        element.style.transition = "height 0.3s ease";
-        requestAnimationFrame(() => {
-            element.style.height = element.scrollHeight + "px";
-        });
-        element.classList.add("active");
-        element.addEventListener("transitionend", function handler() {
-            element.style.removeProperty("height");
-            element.style.removeProperty("transition");
-            element.removeEventListener("transitionend", handler);
-        });
-    }
 
     function closeAllSubMenus() {
-        menuItems.forEach(item => item.classList.remove("active"));
-        subMenus.forEach(sub => {
-            if (sub.style.display !== "none") {
-                slideUp(sub);
-            } else {
-                sub.classList.remove("active");
-                sub.style.removeProperty("display");
-            }
-        });
+        menuItems.removeClass('active');
+        subMenus.removeClass('active').slideUp();
     }
 
     function toggleMobileMenu() {
-        burger.classList.toggle("active");
-        headerBox.classList.toggle("active");
-        headerMenu.classList.toggle("active");
+        burger.toggleClass('active');
+        headerBox.toggleClass('active');
+        headerMenu.toggleClass('active');
+        body.toggleClass('active');
 
-        if (!burger.classList.contains("active")) {
+        if (!burger.hasClass('active')) {
             closeAllSubMenus();
         }
     }
 
     function bindHandlers() {
-        burger.addEventListener("click", toggleMobileMenu);
+        burger.on('click.mobileMenu', function () {
+            toggleMobileMenu();
+        });
 
-        upButton.addEventListener("click", () => {
-            burger.classList.remove("active");
-            headerBox.classList.remove("active");
-            headerMenu.classList.remove("active");
+        upButton.on('click.mobileMenu', function () {
+            burger.removeClass('active');
+            headerBox.removeClass('active');
+            headerMenu.removeClass('active');
+            body.removeClass('active');
             closeAllSubMenus();
         });
 
-        menuItems.forEach(item => {
-            const link = item.querySelector(":scope > a");
-            link.addEventListener("click", (e) => {
-                const href = link.getAttribute("href");
+        menuItems.on('click.mobileMenu', '> a', function (e) {
+            const $parentItem = $(this).parent();
 
-                if (href === "##") {
-                    e.preventDefault();
-                    const submenu = item.querySelector(":scope > .sub-menu");
+            // Если есть подменю — отменяем переход и переключаем меню
+            if ($parentItem.children('.sub-menu').length) {
+                e.preventDefault();
 
-                    if (submenu.classList.contains("active")) {
-                        slideUp(submenu);
-                        item.classList.remove("active");
-                    } else {
-                        closeAllSubMenus();
-                        slideDown(submenu);
-                        item.classList.add("active");
-                    }
+                const $submenu = $parentItem.children('.sub-menu');
+
+                if ($submenu.is(':visible')) {
+                    $submenu.removeClass('active').slideUp();
+                    $parentItem.removeClass('active');
                 } else {
-                    burger.classList.remove("active");
-                    headerBox.classList.remove("active");
-                    headerMenu.classList.remove("active");
                     closeAllSubMenus();
+                    $submenu.addClass('active').slideDown();
+                    $parentItem.addClass('active');
                 }
-            });
+            }
+            // Иначе — переход по ссылке происходит как обычно
         });
 
         isEnabled = true;
     }
 
     function unbindHandlers() {
-        burger.replaceWith(burger.cloneNode(true));
-        upButton.replaceWith(upButton.cloneNode(true));
-        menuItems.forEach(item => {
-            const link = item.querySelector(":scope > a");
-            link.replaceWith(link.cloneNode(true));
-        });
+        burger.off('.mobileMenu');
+        upButton.off('.mobileMenu');
+        menuItems.off('.mobileMenu');
 
-        burger.classList.remove("active");
-        headerBox.classList.remove("active");
-        headerMenu.classList.remove("active");
-
-        subMenus.forEach(sub => {
-            sub.style.removeProperty("display");
-            sub.classList.remove("active");
-        });
-        menuItems.forEach(item => item.classList.remove("active"));
+        burger.removeClass('active');
+        headerBox.removeClass('active');
+        headerMenu.removeClass('active');
+        body.removeClass('active');
+        subMenus.removeAttr('style').removeClass('active');
+        menuItems.removeClass('active');
 
         isEnabled = false;
     }
 
     function checkWidth() {
-        if (window.innerWidth <= 1200) {
+        if ($(window).width() <= 1200) {
             if (!isEnabled) {
                 closeAllSubMenus();
                 bindHandlers();
@@ -138,7 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkWidth();
 
-    window.addEventListener("resize", () => {
+    let resizeTimeout;
+    $(window).on('resize', function () {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(checkWidth, 150);
     });

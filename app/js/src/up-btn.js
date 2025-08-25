@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.querySelector('.upButton');
     const header = document.querySelector('.header');
     const logo = document.querySelector('.header__logo');
+    const menu = document.querySelector('.header .menu');
 
     function trackScroll() {
         const scrolled = window.scrollY;
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(btn) btn.classList.toggle('show', show);
         if(header) header.classList.toggle('scrolled', show);
+        if(menu) menu.classList.toggle('scrolled', show);
     }
 
     window.addEventListener('scroll', trackScroll);
